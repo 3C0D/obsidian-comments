@@ -13,6 +13,7 @@ function commentType(codeBlockType: string) {
 		"js",
 		"javascript",
 		"ts",
+		"tsx",
 		"typescript",
 		"jsx",
 		"less",
