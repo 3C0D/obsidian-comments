@@ -1,8 +1,8 @@
 {
-	"name": "obsidian-sample-plugin-modif",
+	"name": "comments",
 	"version": "1.0.0",
-	"description": "modifief sample plugin",
-	"main": "main.js",
+	"description": "General comments or langage related (in codeblocks)",
+	"main": "src/main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
 		"cms": "node scripts/copyManCss.mjs",
