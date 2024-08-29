@@ -1,5 +1,4 @@
 import { Editor, MarkdownView } from "obsidian";
-import AdvancedComments from "./main";
 
 function commentType(codeBlockType: string) {
 	const cLikeTypes = [
@@ -26,6 +25,7 @@ function commentType(codeBlockType: string) {
 		"python",
 		"py",
 		"ruby",
+		"rb",
 		"bash",
 		"ps1",
 		"zsh",
