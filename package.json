@@ -1,6 +1,6 @@
 {
 	"name": "comments",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"description": "General comments or langage related (in codeblocks)",
 	"main": "src/main.js",
 	"scripts": {
