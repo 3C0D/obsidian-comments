@@ -1,6 +1,3 @@
-All my plugin are now unofficial (ex 1C0D but free → 3C0D). I don't care about likes or going through an acceptation process of plugins. No more waiting for the good will of a guy for a simple title change or a stuypid bot validation...Perverts are often hiding them behind stupid rules.
-I'm free.
-
 # Comments
 
 normal comments or in codeblocks
