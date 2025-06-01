@@ -1,6 +1,6 @@
 import { Editor, MarkdownView } from "obsidian";
 
-function commentType(codeBlockType: string) {
+function commentType(codeBlockType: string): string {
 	const cLikeTypes = [
 		"c",
 		"cpp",
@@ -65,7 +65,7 @@ export function commentSelection(
 	selection: string,
 	codeBlockType: string | null,
 	blockComment: boolean
-) {
+): void {
 	let commentedSelection = "";
 
 	if (codeBlockType) {
@@ -153,7 +153,7 @@ export function getPosToOffset(
 	editor: Editor,
 	sel: string,
 	blockComment: boolean
-) {
+): { pi: number; pr: number; sel: string } {
 	let i = editor.getCursor("from");
 	let r = editor.getCursor("to");
 	let pi = editor.posToOffset(i);

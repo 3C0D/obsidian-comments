@@ -1,9 +1,9 @@
-import { App, Editor, MarkdownView, Plugin } from "obsidian";
-import { commentSelection, getPosToOffset } from "./CommentHelper";
+import { Editor, Plugin } from "obsidian";
+import { commentSelection, getPosToOffset } from "./CommentHelper.js";
 
 export default class AdvancedComments extends Plugin {
 
-	async onload() {
+	async onload(): Promise<void> {
 		this.addCommand({
 			id: "advanced-comments",
 			name: "Line Comments",
@@ -20,7 +20,7 @@ export default class AdvancedComments extends Plugin {
 		this.addCommand({
 			id: "trim-end-all-doc",
 			name: "Trim End All Doc",
-			editorCallback: (editor: Editor, view: MarkdownView) => {
+			editorCallback: (editor: Editor) => {
 				const value = editor.getValue().replace(/[ \t]+$/gm, "");
 				editor.setValue(value);
 			},
@@ -29,12 +29,12 @@ export default class AdvancedComments extends Plugin {
 		this.addCommand({
 			id: "trim-end-code-blocks",
 			name: "Trim End Code Blocks",
-			editorCallback: (editor: Editor, view: MarkdownView) => {
+			editorCallback: (editor: Editor) => {
 				const value = editor
 					.getValue()
 					.replace(
 						/^(```|~~~)([a-z0-9-+]+)\n([\s\S]*?)\n(?:```|~~~)$/gim,
-						(match,p0, p1, p2) => {
+						(_match, p0, p1, p2) => {
 							return (
 								p0 +
 								p1 +
@@ -49,8 +49,8 @@ export default class AdvancedComments extends Plugin {
 		});
 	}
 
-	advancedComments = (editor: Editor, blockComment: boolean=false): void => {
-		// eslint-disable-next-line prefer-const
+	advancedComments = (editor: Editor, blockComment: boolean = false): void => {
+
 		let { selection, value } = this.getSelectionAndValue(editor);
 		if (!blockComment && !selection) {
 			const curs = editor.getCursor();
@@ -59,19 +59,19 @@ export default class AdvancedComments extends Plugin {
 			if (selection.trim() === "") return;
 		}
 
-		const { pi, pr, sel } = getPosToOffset(editor, selection,blockComment);
+		const { pi, pr, sel } = getPosToOffset(editor, selection, blockComment);
 		const codeBlockType = this.getBlockType(editor, value, sel, pi, pr);
-		commentSelection(editor, sel, codeBlockType,blockComment);
+		commentSelection(editor, sel, codeBlockType, blockComment);
 	};
 
-	getSelectionAndValue = (editor: Editor) => {
+	getSelectionAndValue = (editor: Editor): { selection: string; value: string } => {
 		const selection = editor.getSelection();
 		const value = editor.getValue();
 		return { selection, value };
 	};
 
 	getBlockType = (
-		editor: Editor,
+		_editor: Editor,
 		value: string,
 		sel: string,
 		pi: number,
@@ -87,7 +87,7 @@ export default class AdvancedComments extends Plugin {
 			if (
 				blockMatch.index <= cursorIndex &&
 				blockMatch.index + blockMatch[0].length >=
-					cursorIndex + sel.length
+				cursorIndex + sel.length
 			) {
 				return blockMatch[1] ? blockMatch[1] : "empty";
 			}
@@ -97,7 +97,7 @@ export default class AdvancedComments extends Plugin {
 			if (
 				blockMatch.index <= cursorIndex &&
 				blockMatch.index + blockMatch[0].length >=
-					cursorIndex + sel.length
+				cursorIndex + sel.length
 			) {
 				return "templater";
 			}
