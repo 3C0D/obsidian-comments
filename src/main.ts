@@ -33,14 +33,15 @@ export default class AdvancedComments extends Plugin {
 				const value = editor
 					.getValue()
 					.replace(
-						/^(```|~~~)([a-z0-9-+]+)\n([\s\S]*?)\n(?:```|~~~)$/gim,
-						(_match, p0, p1, p2) => {
+						/^(`{3,}|~{3,})([a-z0-9-+]*)\n([\s\S]*?)\n(\1)$/gim,
+						(_match, delimiter, language, content, _closingDelimiter) => {
 							return (
-								p0 +
-								p1 +
+								delimiter +
+								language +
 								"\n" +
-								p2.replace(/[ \t]+$/gm, "") +
-								"\n" + p0
+								content.replace(/[ \t]+$/gm, "") +
+								"\n" + 
+								delimiter
 							);
 						}
 					);
@@ -77,10 +78,13 @@ export default class AdvancedComments extends Plugin {
 		pi: number,
 		pr: number
 	): string | null => {
-		const codeBlockRegex = /^(?:```|~~~)([a-z0-9-+]*)\n([\s\S]*?)\n(?:```|~~~)$/gim; //case-insensitive
+		const codeBlockRegex = /^(`{3,}|~{3,})([a-z0-9-+]*)\n([\s\S]*?)\n(\1)$/gim;
 		const templateBlockRegex = /^<%\*(.*?)%>$/gms;
 		const cursorIndex = Math.min(pi, pr);
 		let blockMatch;
+
+		// Reset regex avant utilisation
+		codeBlockRegex.lastIndex = 0;
 
 		while ((blockMatch = codeBlockRegex.exec(value))) {
 			// find in what block selection is
@@ -89,9 +93,13 @@ export default class AdvancedComments extends Plugin {
 				blockMatch.index + blockMatch[0].length >=
 				cursorIndex + sel.length
 			) {
-				return blockMatch[1] ? blockMatch[1] : "empty";
+				return blockMatch[2] ? blockMatch[2] : "empty";
 			}
 		}
+
+		// Reset regex pour les templates
+		templateBlockRegex.lastIndex = 0;
+
 		while ((blockMatch = templateBlockRegex.exec(value))) {
 			// find in what block selection is
 			if (
