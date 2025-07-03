@@ -1,1 +1,1 @@
-fix multiline
+fix line with only spaces and bat
