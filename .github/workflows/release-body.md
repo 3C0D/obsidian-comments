@@ -1,1 +1,1 @@
-fix line with only spaces and bat
+refactoring (simplification)
