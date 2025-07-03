@@ -12,24 +12,24 @@ export const REGEX_PATTERNS = {
 	// Patterns for line comments
 	lineComment: {
 		cLike: {
-			isCommented: /^(\s*)\/\/\s?(.*)$/gm,
-			uncomment: /^(\s*)\/\/\s?(.*)$/gm,
-			addComment: (text: string): string => text.replace(/^(\s*)(.*)$/gm, '$1// $2')
+			isCommented: /^(\s*)\/\/\s?(.+)$/gm,
+			uncomment: /^(\s*)\/\/\s?(.+)$/gm,
+			addComment: (text: string): string => text.replace(/^(\s*)(\S.*)$/gm, '$1// $2')
 		},
 		hash: {
-			isCommented: /^(\s*)#\s?(.*)$/gm,
-			uncomment: /^(\s*)#\s?(.*)$/gm,
-			addComment: (text: string): string => text.replace(/^(\s*)(.*)$/gm, '$1# $2')
+			isCommented: /^(\s*)#\s?(.+)$/gm,
+			uncomment: /^(\s*)#\s?(.+)$/gm,
+			addComment: (text: string): string => text.replace(/^(\s*)(\S.*)$/gm, '$1# $2')
 		},
 		lua: {
-			isCommented: /^(\s*)--\s?(.*)$/gm,
-			uncomment: /^(\s*)--\s?(.*)$/gm,
-			addComment: (text: string): string => text.replace(/^(\s*)(.*)$/gm, '$1-- $2')
+			isCommented: /^(\s*)--\s?(.+)$/gm,
+			uncomment: /^(\s*)--\s?(.+)$/gm,
+			addComment: (text: string): string => text.replace(/^(\s*)(\S.*)$/gm, '$1-- $2')
 		},
 		bat: {
-			isCommented: /^[Rr][Ee][Mm]\s?(.*)$/gm,
-			uncomment: /^[Rr][Ee][Mm]\s?(.*)$/gm,
-			addComment: (text: string): string => text.replace(/^(.*)$/gm, 'REM $1')
+			isCommented: /^(\s*)[Rr][Ee][Mm]\s?(.+)$/gm,
+			uncomment: /^(\s*)[Rr][Ee][Mm]\s?(.+)$/gm,
+			addComment: (text: string): string =>  text.replace(/^(\s*)(\S.*)$/gm, '$1REM $2')
 		}
 	},
 

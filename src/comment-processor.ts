@@ -99,7 +99,7 @@ export class CommentProcessor {
 		return text.replace(pattern.uncomment, (match, ...groups) => {
 			// For patterns with capture groups
 			if (groups.length >= 2) {
-				if (groups[0] && groups[1]) return groups[0] + groups[1]; // Preserve indentation
+				if (groups[1]) return groups[0] + groups[1]; // Preserve indentation
 				return groups[0];
 			} else if (groups.length === 1) {
 				return groups[0]; // Just the content
