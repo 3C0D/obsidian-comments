@@ -23,7 +23,8 @@ const LANGUAGE_MAPPINGS: Record<string, string> = {
     'lua': 'lua', 'sql': 'lua',
     'html': 'html', 'xml': 'html', 'md': 'html',
     'css': 'css',
-    'bat': 'bat'
+    'bat': 'bat',
+
 };
 
 /**
@@ -50,16 +51,16 @@ const COMMENT_PATTERNS = {
     },
     blockComment: {
         cLike: {
-            uncomment: /^\/\*\s?(.*)\s?\*\/$/gms,
-            addComment: (text: string): string => text.replace(/^(.+)$/gms, '/* $1 */')
+            uncomment: /^\/\*\s(.*)\s\*\/$/s,
+            addComment: (text: string): string => text.replace(/^(.+)$/s, '/* $1 */')
         },
         html: {
-            uncomment: /^<!--\s?(.*)\s?-->$/gms,
-            addComment: (text: string): string => text.replace(/^(.*)$/gms, '<!-- $1 -->')
+            uncomment: /^<!--\s(.*)\s-->$/s,
+            addComment: (text: string): string => text.replace(/^(.+)$/s, '<!-- $1 -->')
         },
         css: {
-            uncomment: /^\/\*\s?(.*)\s?\*\/$/gms,
-            addComment: (text: string): string => text.replace(/^(.+)$/gms, '/* $1 */')
+            uncomment: /^\/\*\s(.*)\s\*\/$/s,
+            addComment: (text: string): string => text.replace(/^(.+)$/s, '/* $1 */')
         }
     }
 };
@@ -71,17 +72,32 @@ export function getCommentPattern(language: string, isBlockComment: boolean): Co
     const baseStyle = LANGUAGE_MAPPINGS[language?.toLowerCase()];
     if (!baseStyle) return null;
 
-    const patterns = isBlockComment ? COMMENT_PATTERNS.blockComment : COMMENT_PATTERNS.lineComment;
-
-    // Logic for block comments
+    // Block comment logic
     if (isBlockComment) {
         const blockStyles = ['cLike', 'html', 'css'];
         const styleKey = blockStyles.includes(baseStyle) ? baseStyle : null;
-        return styleKey ? patterns[styleKey as keyof typeof patterns] : null;
+
+        // If the style is found in block comments, use it
+        if (styleKey) {
+            return COMMENT_PATTERNS.blockComment[styleKey as keyof typeof COMMENT_PATTERNS.blockComment];
+        }
+
+        // Otherwise, use the line comment as a fallback
+        const lineStyles = ['cLike', 'hash', 'lua', 'bat'];
+        const fallbackStyleKey = lineStyles.includes(baseStyle) ? baseStyle : null;
+        return fallbackStyleKey ? COMMENT_PATTERNS.lineComment[fallbackStyleKey as keyof typeof COMMENT_PATTERNS.lineComment] : null;
     }
 
-    // Logic for line comments
+    // Line comment logic
     const lineStyles = ['cLike', 'hash', 'lua', 'bat'];
     const styleKey = lineStyles.includes(baseStyle) ? baseStyle : null;
-    return styleKey ? patterns[styleKey as keyof typeof patterns] : null;
+
+    // If not found in line comments, try a fallback from block comments
+    if (!styleKey) {
+        const blockStyles = ['html', 'css'];
+        const fallbackStyleKey = blockStyles.includes(baseStyle) ? baseStyle : null;
+        return fallbackStyleKey ? COMMENT_PATTERNS.blockComment[fallbackStyleKey as keyof typeof COMMENT_PATTERNS.blockComment] : null;
+    }
+
+    return COMMENT_PATTERNS.lineComment[styleKey as keyof typeof COMMENT_PATTERNS.lineComment];
 }

@@ -95,13 +95,22 @@ export class CommentManager {
     private static uncommentText(text: string, pattern: CommentPatterns): string {
         pattern.uncomment.lastIndex = 0;
         return text.replace(pattern.uncomment, (match, ...groups) => {
-            if (groups.length >= 2 && groups[1]) return groups[0] + groups[1];
-            if (groups.length === 1) return groups[0];
+            if (groups.length >= 2 && groups[1]) { // indentation handling
+                // console.debug('uncomment line comments', match);
+                return groups[0] + groups[1];
+            } else if (groups.length >= 2 && !groups[1]) { // block comments
+                // console.debug('uncomment block comments', match);
+                return groups[0];
+            } else if (groups.length === 1) {
+                // console.debug('uncomment Never happening?', match);
+                return groups[0];
+            }
+            // console.debug('final return uncomment should not happen', match);
             return match;
         });
     }
 
-    /**
+    /**  
      * Adds comments
      */
     private static commentText(text: string, pattern: CommentPatterns): string {

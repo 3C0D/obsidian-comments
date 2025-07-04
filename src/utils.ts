@@ -5,13 +5,17 @@ import { Editor, type EditorPosition } from 'obsidian';
  */
 const BLOCK_PATTERNS = {
     codeBlock: /^(`{3,}|~{3,})([a-z0-9-+]*)\n([\s\S]*?)\n(\1)$/gim,
-    templateBlock: /^<%\*(.*?)%>$/gms
+    templateBlock: /^<%\*(.*?)%>$/gms,
 };
 
 /**
  * Detects the block type at the selection
  */
-export function detectBlockType(content: string, selectionStart: number, selectionEnd: number): string | null {
+export function detectBlockType(
+    content: string,
+    selectionStart: number,
+    selectionEnd: number,
+): string | null {
     // Check for Templater blocks
     if (detectTemplaterBlock(content, selectionStart, selectionEnd)) {
         return 'templater';
