@@ -1,7 +1,7 @@
 {
 	"id": "my-comments",
 	"name": "Comments",
-	"version": "1.2.0",
+	"version": "1.2.1",
 	"minAppVersion": "0.15.0",
 	"description": "General comments or langage related (in codeblocks)",
 	"author": "3C0D",
