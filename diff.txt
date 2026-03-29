@@ -1,0 +1,498 @@
+diff --git a/scripts/help.ts b/scripts/help.ts
+index 12e4324..d8f91df 100644
+--- a/scripts/help.ts
++++ b/scripts/help.ts
+@@ -43,6 +43,19 @@ ENVIRONMENT:
+   - Autonomous scripts (no external dependencies)
+   - Automatic Git sync verification before push
+ 
++📝 SUPPORTED COMMENT FORMATS:
++  Line Comments:
++    - C-like: // (C, C++, Java, JS, TS, CSS, SCSS, Less, JSON, etc.)
++    - Hash: # (Python, Ruby, Bash, Zsh, YAML, AppleScript, etc.)
++    - Lua: -- (Lua, SQL)
++    - Batch: REM (Batch files)
++    - PowerShell: # (PowerShell, PS1)
++  Block Comments:
++    - C-like: /* ... */ (C, C++, Java, JS, TS, etc.)
++    - HTML: <!-- ... --> (HTML, XML, Markdown)
++    - CSS: /* ... */ (CSS, SCSS, Less)
++    - PowerShell: <# ... #> (PowerShell, PS1)
++
+ AUTONOMOUS PLUGIN:
+   ✅ Independent local scripts
+   ✅ Integrated TypeScript and ESLint configuration
+diff --git a/src/comment-manager.ts b/src/comment-manager.ts
+index acd2072..61fba88 100644
+--- a/src/comment-manager.ts
++++ b/src/comment-manager.ts
+@@ -2,158 +2,151 @@ import { Editor, type EditorPosition } from "obsidian";
+ import { getCommentPattern, type CommentPatterns } from "./patterns.ts";
+ import { detectBlockType, adjustSelection } from "./utils.ts";
+ 
+-export class CommentManager {
+-	/**
+-	 * Processes comments (line or block)
+-	 */
+-	static processComments(editor: Editor, isBlockComment: boolean): void {
+-		const selection = this.getSelection(editor, isBlockComment);
+-		if (!selection.text && !isBlockComment) return;
+-
+-		const blockType = detectBlockType(
+-			editor.getValue(),
+-			selection.start,
+-			selection.end,
+-		);
+-		const processedText = this.processText(
+-			selection.text,
+-			blockType,
+-			isBlockComment,
+-		);
+-
+-		editor.replaceRange(processedText, selection.from, selection.to);
+-	}
++/**
++ * Processes comments (line or block)
++ */
++export function processComments(editor: Editor, isBlockComment: boolean): void {
++	const selection = getSelection(editor, isBlockComment);
++	if (!selection.text && !isBlockComment) return;
+ 
+-	/**
+-	 * Removes trailing spaces in the entire document
+-	 */
+-	static trimEndAllDoc(editor: Editor): void {
+-		const content = editor.getValue();
+-		const trimmedContent = content.replace(/[ \t]+$/gm, "");
+-		editor.setValue(trimmedContent);
+-	}
++	const blockType = detectBlockType(
++		editor.getValue(),
++		selection.start,
++		selection.end,
++	);
++	const processedText = processText(
++		selection.text,
++		blockType,
++		isBlockComment,
++	);
+ 
+-	/**
+-	 * Removes trailing spaces only in code blocks
+-	 */
+-	static trimEndCodeBlocks(editor: Editor): void {
+-		const content = editor.getValue();
+-		const processedContent = content.replace(
+-			/^(`{3,}|~{3,})([a-z0-9-+]*)\n([\s\S]*?)\n(\1)$/gim,
+-			(_match, delimiter, language, blockContent, _closingDelimiter) => {
+-				const trimmedBlockContent = blockContent.replace(
+-					/[ \t]+$/gm,
+-					"",
+-				);
+-				return `${delimiter}${language}\n${trimmedBlockContent}\n${delimiter}`;
+-			},
+-		);
+-		editor.setValue(processedContent);
+-	}
++	editor.replaceRange(processedText, selection.from, selection.to);
++}
+ 
+-	/**
+-	 * Gets the current selection with adjustments if necessary
+-	 */
+-	private static getSelection(
+-		editor: Editor,
+-		isBlockComment: boolean,
+-	): {
+-		text: string;
+-		start: number;
+-		end: number;
+-		from: EditorPosition;
+-		to: EditorPosition;
+-	} {
+-		let from = editor.getCursor("from");
+-		let to = editor.getCursor("to");
+-		let text = editor.getSelection();
+-
+-		// Adjustment for line comments
+-		if (!isBlockComment) {
+-			text = adjustSelection(editor, from, to, text);
+-			from = editor.getCursor("from");
+-			to = editor.getCursor("to");
+-		}
++/**
++ * Removes trailing spaces in the entire document
++ */
++export function trimEndAllDoc(editor: Editor): void {
++	const content = editor.getValue();
++	const trimmedContent = content.replace(/[ \t]+$/gm, "");
++	editor.setValue(trimmedContent);
++}
+ 
+-		const start = editor.posToOffset(from);
+-		const end = editor.posToOffset(to);
++/**
++ * Removes trailing spaces only in code blocks
++ */
++export function trimEndCodeBlocks(editor: Editor): void {
++	const content = editor.getValue();
++	const processedContent = content.replace(
++		/^(`{3,}|~{3,})([a-z0-9-+]*)\n([\s\S]*?)\n(\1)$/gm,
++		(_match, delimiter, language, blockContent, _closingDelimiter) => {
++			const trimmedBlockContent = blockContent.replace(/[ \t]+$/gm, "");
++			return `${delimiter}${language}\n${trimmedBlockContent}\n${delimiter}`;
++		},
++	);
++	editor.setValue(processedContent);
++}
++
++/**
++ * Gets the current selection with adjustments if necessary
++ */
++function getSelection(
++	editor: Editor,
++	isBlockComment: boolean,
++): {
++	text: string;
++	start: number;
++	end: number;
++	from: EditorPosition;
++	to: EditorPosition;
++} {
++	let from = editor.getCursor("from");
++	let to = editor.getCursor("to");
++	let text = editor.getSelection();
+ 
+-		return { text, start, end, from, to };
++	// Adjustment for line comments
++	if (!isBlockComment) {
++		text = adjustSelection(editor, from, to, text);
++		from = editor.getCursor("from");
++		to = editor.getCursor("to");
+ 	}
+ 
+-	/**
+-	 * Processes the text to add/remove comments
+-	 */
+-	private static processText(
+-		text: string,
+-		blockType: string | null,
+-		isBlockComment: boolean,
+-	): string {
+-		// Default Obsidian comments
+-		if (!blockType) {
+-			return this.processObsidianComment(text);
+-		}
++	const start = editor.posToOffset(from);
++	const end = editor.posToOffset(to);
+ 
+-		const pattern = getCommentPattern(blockType, isBlockComment);
+-		if (!pattern) return text;
+-
+-		if (!isBlockComment) {
+-			const lines = text.split("\n").filter((l) => l.trim() !== "");
+-			const allCommented = lines.every((l) => {
+-				pattern.uncomment.lastIndex = 0;
+-				return pattern.uncomment.test(l);
+-			});
+-			return allCommented
+-				? this.uncommentText(text, pattern)
+-				: this.commentText(text, pattern);
+-		}
+-		
+-		return pattern.uncomment.test(text)
+-			? this.uncommentText(text, pattern)
+-			: this.commentText(text, pattern);
+-	}
++	return { text, start, end, from, to };
++}
+ 
+-	/**
+-	 * Processes Obsidian comments (%% %%)
+-	 */
+-	private static processObsidianComment(text: string): string {
+-		const pattern = /^%%\s?(.+?)\s?%%$/gms;
+-		if (pattern.test(text)) {
+-			return text.replace(pattern, "$1");
+-		}
+-		return text.replace(/^(.+)$/gms, "%% $1 %%");
++/**
++ * Processes the text to add/remove comments
++ */
++function processText(
++	text: string,
++	blockType: string | null,
++	isBlockComment: boolean,
++): string {
++	// Default Obsidian comments
++	if (!blockType) {
++		return processObsidianComment(text);
+ 	}
+ 
+-	/**
+-	 * Removes comments
+-	 */
+-	private static uncommentText(
+-		text: string,
+-		pattern: CommentPatterns,
+-	): string {
+-		pattern.uncomment.lastIndex = 0;
+-		return text.replace(pattern.uncomment, (match, ...groups) => {
+-			if (groups.length >= 2 && groups[1]) {
+-				// indentation handling
+-				// console.debug('uncomment line comments', match);
+-				return groups[0] + groups[1];
+-			} else if (groups.length >= 2 && !groups[1]) {
+-				// block comments
+-				// console.debug('uncomment block comments', match);
+-				return groups[0];
+-			} else if (groups.length === 1) {
+-				// console.debug('uncomment Never happening?', match);
+-				return groups[0];
+-			}
+-			// console.debug('final return uncomment should not happen', match);
+-			return match;
++	const pattern = getCommentPattern(blockType, isBlockComment);
++	if (!pattern) return text;
++
++	if (!isBlockComment) {
++		const lines = text.split("\n").filter((l) => l.trim() !== "");
++		const allCommented = lines.every((l) => {
++			pattern.uncomment.lastIndex = 0;
++			return pattern.uncomment.test(l);
+ 		});
++		return allCommented
++			? uncommentText(text, pattern)
++			: commentText(text, pattern);
+ 	}
+ 
+-	/**
+-	 * Adds comments
+-	 */
+-	private static commentText(text: string, pattern: CommentPatterns): string {
+-		return pattern.addComment(text);
++	pattern.uncomment.lastIndex = 0;
++	return pattern.uncomment.test(text)
++		? uncommentText(text, pattern)
++		: commentText(text, pattern);
++}
++
++/**
++ * Processes Obsidian comments (%% %%)
++ */
++function processObsidianComment(text: string): string {
++	const pattern = /^%%\s?(.+?)\s?%%$/gms;
++	if (pattern.test(text)) {
++		return text.replace(pattern, "$1");
+ 	}
++	return text.replace(/^(.+)$/gms, "%% $1 %%");
++}
++
++/**
++ * Removes comments
++ */
++function uncommentText(text: string, pattern: CommentPatterns): string {
++	pattern.uncomment.lastIndex = 0;
++	return text.replace(pattern.uncomment, (match, ...groups) => {
++		if (groups.length >= 2 && groups[1]) {
++			// indentation handling
++			// console.debug('uncomment line comments', match);
++			return groups[0] + groups[1];
++		} else if (groups.length >= 2 && !groups[1]) {
++			// block comments
++			// console.debug('uncomment block comments', match);
++			return groups[0];
++		} else if (groups.length === 1) {
++			// console.debug('uncomment Never happening?', match);
++			return groups[0];
++		}
++		// console.debug('final return uncomment should not happen', match);
++		return match;
++	});
++}
++
++/**
++ * Adds comments
++ */
++function commentText(text: string, pattern: CommentPatterns): string {
++	return pattern.addComment(text);
+ }
+diff --git a/src/main.ts b/src/main.ts
+index 1e64622..126ca42 100644
+--- a/src/main.ts
++++ b/src/main.ts
+@@ -1,30 +1,34 @@
+-import { Editor, Plugin } from 'obsidian';
+-import { CommentManager } from './comment-manager.ts';
++import { Editor, Plugin } from "obsidian";
++import {
++	processComments,
++	trimEndAllDoc,
++	trimEndCodeBlocks,
++} from "./comment-manager.ts";
+ 
+ export default class AdvancedComments extends Plugin {
+ 	async onload(): Promise<void> {
+ 		this.addCommand({
+-			id: 'advanced-comments',
+-			name: 'Line Comments',
+-			editorCallback: (editor: Editor) => CommentManager.processComments(editor, false),
++			id: "advanced-comments",
++			name: "Line Comments",
++			editorCallback: (editor: Editor) => processComments(editor, false),
+ 		});
+ 
+ 		this.addCommand({
+-			id: 'advanced-blockComments',
+-			name: 'Block Comments',
+-			editorCallback: (editor: Editor) => CommentManager.processComments(editor, true),
++			id: "advanced-blockComments",
++			name: "Block Comments",
++			editorCallback: (editor: Editor) => processComments(editor, true),
+ 		});
+ 
+ 		this.addCommand({
+-			id: 'trim-end-all-doc',
+-			name: 'Trim End All Doc',
+-			editorCallback: (editor: Editor) => CommentManager.trimEndAllDoc(editor),
++			id: "trim-end-all-doc",
++			name: "Trim End All Doc",
++			editorCallback: (editor: Editor) => trimEndAllDoc(editor),
+ 		});
+ 
+ 		this.addCommand({
+-			id: 'trim-end-code-blocks',
+-			name: 'Trim End Code Blocks',
+-			editorCallback: (editor: Editor) => CommentManager.trimEndCodeBlocks(editor),
++			id: "trim-end-code-blocks",
++			name: "Trim End Code Blocks",
++			editorCallback: (editor: Editor) => trimEndCodeBlocks(editor),
+ 		});
+ 	}
+-}
+\ No newline at end of file
++}
+diff --git a/src/patterns.ts b/src/patterns.ts
+index 74358c0..705aeb1 100644
+--- a/src/patterns.ts
++++ b/src/patterns.ts
+@@ -53,10 +53,10 @@ const LANGUAGE_MAPPINGS: Record<string, string> = {
+ };
+ 
+ /**
+- * Comment patterns
++ * Comment patterns organized by comment type and style
+  */
+ const COMMENT_PATTERNS = {
+-	lineComment: {
++	line: {
+ 		cLike: {
+ 			uncomment: /^(\s*)\/\/\s?(.+)$/gm,
+ 			addComment: (text: string): string =>
+@@ -83,7 +83,7 @@ const COMMENT_PATTERNS = {
+ 				text.replace(/^(\s*)(\S.*)$/gm, "$1# $2"),
+ 		},
+ 	},
+-	blockComment: {
++	block: {
+ 		cLike: {
+ 			uncomment: /^\/\*\s(.*)\s\*\/$/s,
+ 			addComment: (text: string): string =>
+@@ -107,6 +107,30 @@ const COMMENT_PATTERNS = {
+ 	},
+ };
+ 
++type LineStyle = keyof typeof COMMENT_PATTERNS.line;
++type BlockStyle = keyof typeof COMMENT_PATTERNS.block;
++
++/**
++ * Styles that support line comments
++ */
++const LINE_STYLES: Record<LineStyle, true> = {
++	cLike: true,
++	hash: true,
++	lua: true,
++	bat: true,
++	powershell: true,
++};
++
++/**
++ * Styles that support block comments
++ */
++const BLOCK_STYLES: Record<BlockStyle, true> = {
++	cLike: true,
++	html: true,
++	css: true,
++	powershell: true,
++};
++
+ /**
+  * Gets the appropriate comment pattern
+  */
+@@ -117,48 +141,27 @@ export function getCommentPattern(
+ 	const baseStyle = LANGUAGE_MAPPINGS[language?.toLowerCase()];
+ 	if (!baseStyle) return null;
+ 
+-	// Block comment logic
+ 	if (isBlockComment) {
+-		const blockStyles = ["cLike", "html", "css", "powershell"];
+-		const styleKey = blockStyles.includes(baseStyle) ? baseStyle : null;
+-
+-		// If the style is found in block comments, use it
+-		if (styleKey) {
+-			return COMMENT_PATTERNS.blockComment[
+-				styleKey as keyof typeof COMMENT_PATTERNS.blockComment
+-			];
++		const blockStyles = BLOCK_STYLES as Record<string, true>;
++		if (blockStyles[baseStyle]) {
++			return COMMENT_PATTERNS.block[baseStyle as BlockStyle];
+ 		}
+-
+-		// Otherwise, use the line comment as a fallback
+-		const lineStyles = ["cLike", "hash", "lua", "bat"];
+-		const fallbackStyleKey = lineStyles.includes(baseStyle)
+-			? baseStyle
+-			: null;
+-		return fallbackStyleKey
+-			? COMMENT_PATTERNS.lineComment[
+-					fallbackStyleKey as keyof typeof COMMENT_PATTERNS.lineComment
+-				]
+-			: null;
++		// Fallback to line styles
++		const lineStyles = LINE_STYLES as Record<string, true>;
++		if (lineStyles[baseStyle]) {
++			return COMMENT_PATTERNS.line[baseStyle as LineStyle];
++		}
++		return null;
+ 	}
+ 
+-	// Line comment logic
+-	const lineStyles = ["cLike", "hash", "lua", "bat", "powershell"];
+-	const styleKey = lineStyles.includes(baseStyle) ? baseStyle : null;
+-
+-	// If not found in line comments, try a fallback from block comments
+-	if (!styleKey) {
+-		const blockStyles = ["html", "css"];
+-		const fallbackStyleKey = blockStyles.includes(baseStyle)
+-			? baseStyle
+-			: null;
+-		return fallbackStyleKey
+-			? COMMENT_PATTERNS.blockComment[
+-					fallbackStyleKey as keyof typeof COMMENT_PATTERNS.blockComment
+-				]
+-			: null;
++	const lineStyles = LINE_STYLES as Record<string, true>;
++	if (lineStyles[baseStyle]) {
++		return COMMENT_PATTERNS.line[baseStyle as LineStyle];
+ 	}
+-
+-	return COMMENT_PATTERNS.lineComment[
+-		styleKey as keyof typeof COMMENT_PATTERNS.lineComment
+-	];
++	// Fallback to block styles
++	const blockStyles = BLOCK_STYLES as Record<string, true>;
++	if (blockStyles[baseStyle]) {
++		return COMMENT_PATTERNS.block[baseStyle as BlockStyle];
++	}
++	return null;
+ }

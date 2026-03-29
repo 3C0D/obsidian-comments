@@ -1,12 +1,5 @@
 import { Editor, type EditorPosition } from 'obsidian';
-
-/**
- * Block detection patterns
- */
-const BLOCK_PATTERNS = {
-    codeBlock: /^(`{3,}|~{3,})([a-z0-9-+]*)\n([\s\S]*?)\n(\1)$/gim,
-    templateBlock: /^<%\*(.*?)%>$/gms,
-};
+import { BLOCK_PATTERNS } from "./constants.ts";
 
 /**
  * Detects the block type at the selection
