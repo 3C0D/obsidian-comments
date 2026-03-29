@@ -3,5 +3,5 @@ export interface CommentPatterns {
 	addComment: (text: string) => string;
 }
 
-export type LineStyle = "cLike" | "hash" | "lua" | "bat" | "powershell";
-export type BlockStyle = "cLike" | "html" | "css" | "powershell";
+export type LineStyle = 'cLike' | 'hash' | 'lua' | 'bat' | 'powershell';
+export type BlockStyle = 'cLike' | 'html' | 'css' | 'powershell';

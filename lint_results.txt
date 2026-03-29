@@ -1,43 +1,34 @@
-
-> my-comments@1.3.0 lint
-> eslint . --ext .ts
-
+yarn run v1.22.22
+$ eslint . --ext .ts --fix
 
 C:\Users\dd200\Documents\Mes_projets\Mes repo obsidian new\obsidian-comments\old\last save\block-detector.ts
-  0:0  error  Parsing error: "parserOptions.project" has been provided for @typescript-eslint/parser.
-The file was not found in any of the provided project(s): old\last save\block-detector.ts
+  3:8  error  Parsing error: Unexpected token interface
 
 C:\Users\dd200\Documents\Mes_projets\Mes repo obsidian new\obsidian-comments\old\last save\comment-config.ts
-  0:0  error  Parsing error: "parserOptions.project" has been provided for @typescript-eslint/parser.
-The file was not found in any of the provided project(s): old\last save\comment-config.ts
+  1:8  error  Parsing error: Unexpected token interface
 
 C:\Users\dd200\Documents\Mes_projets\Mes repo obsidian new\obsidian-comments\old\last save\comment-helper.ts
-  0:0  error  Parsing error: "parserOptions.project" has been provided for @typescript-eslint/parser.
-The file was not found in any of the provided project(s): old\last save\comment-helper.ts
+  7:10  error  Parsing error: Unexpected token selectionManager
 
 C:\Users\dd200\Documents\Mes_projets\Mes repo obsidian new\obsidian-comments\old\last save\comment-processor.ts
-  0:0  error  Parsing error: "parserOptions.project" has been provided for @typescript-eslint/parser.
-The file was not found in any of the provided project(s): old\last save\comment-processor.ts
+  9:7  error  Parsing error: Unexpected token :
 
 C:\Users\dd200\Documents\Mes_projets\Mes repo obsidian new\obsidian-comments\old\last save\main.ts
-  0:0  error  Parsing error: "parserOptions.project" has been provided for @typescript-eslint/parser.
-The file was not found in any of the provided project(s): old\last save\main.ts
+  6:16  error  Parsing error: Unexpected token :
 
 C:\Users\dd200\Documents\Mes_projets\Mes repo obsidian new\obsidian-comments\old\last save\regex-patterns.ts
-  0:0  error  Parsing error: "parserOptions.project" has been provided for @typescript-eslint/parser.
-The file was not found in any of the provided project(s): old\last save\regex-patterns.ts
+  5:8  error  Parsing error: Unexpected token interface
 
 C:\Users\dd200\Documents\Mes_projets\Mes repo obsidian new\obsidian-comments\old\last save\selection-manager.ts
-  0:0  error  Parsing error: "parserOptions.project" has been provided for @typescript-eslint/parser.
-The file was not found in any of the provided project(s): old\last save\selection-manager.ts
+  2:13  error  Parsing error: Unexpected token {
 
 C:\Users\dd200\Documents\Mes_projets\Mes repo obsidian new\obsidian-comments\old\old-CommentHelper.ts
-  0:0  error  Parsing error: "parserOptions.project" has been provided for @typescript-eslint/parser.
-The file was not found in any of the provided project(s): old\old-CommentHelper.ts
+  3:35  error  Parsing error: Unexpected token :
 
 C:\Users\dd200\Documents\Mes_projets\Mes repo obsidian new\obsidian-comments\old\old-main.ts
-  0:0  error  Parsing error: "parserOptions.project" has been provided for @typescript-eslint/parser.
-The file was not found in any of the provided project(s): old\old-main.ts
+  6:16  error  Parsing error: Unexpected token :
 
 Ô£û 9 problems (9 errors, 0 warnings)
 
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.
+error Command failed with exit code 1.

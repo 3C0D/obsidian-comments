@@ -1,17 +1,17 @@
-import type { CommentPatterns, LineStyle, BlockStyle } from "./types.ts";
+import type { CommentPatterns, LineStyle, BlockStyle } from './types.ts';
 import {
 	LANGUAGE_MAPPINGS,
 	COMMENT_PATTERNS,
 	LINE_STYLES,
-	BLOCK_STYLES,
-} from "./constants.ts";
+	BLOCK_STYLES
+} from './constants.ts';
 
 /**
  * Gets the appropriate comment pattern
  */
 export function getCommentPattern(
 	language: string,
-	isBlockComment: boolean,
+	isBlockComment: boolean
 ): CommentPatterns | null {
 	const baseStyle = LANGUAGE_MAPPINGS[language?.toLowerCase()];
 	if (!baseStyle) return null;

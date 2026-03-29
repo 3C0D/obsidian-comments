@@ -1,8 +1,8 @@
-import { Editor, type EditorPosition } from "obsidian";
-import { getCommentPattern } from "./patterns.ts";
-import type { CommentPatterns } from "./types.ts";
-import { detectBlockType, adjustSelection } from "./utils.ts";
-import { CODE_BLOCK_TRIM_PATTERN, OBSIDIAN_COMMENT_PATTERN } from "./constants.ts";
+import { Editor, type EditorPosition } from 'obsidian';
+import { getCommentPattern } from './patterns.ts';
+import type { CommentPatterns } from './types.ts';
+import { detectBlockType, adjustSelection } from './utils.ts';
+import { CODE_BLOCK_TRIM_PATTERN, OBSIDIAN_COMMENT_PATTERN } from './constants.ts';
 
 /**
  * Processes comments (line or block)
@@ -11,16 +11,8 @@ export function processComments(editor: Editor, isBlockComment: boolean): void {
 	const selection = getSelection(editor, isBlockComment);
 	if (!selection.text && !isBlockComment) return;
 
-	const blockType = detectBlockType(
-		editor.getValue(),
-		selection.start,
-		selection.end,
-	);
-	const processedText = processText(
-		selection.text,
-		blockType,
-		isBlockComment,
-	);
+	const blockType = detectBlockType(editor.getValue(), selection.start, selection.end);
+	const processedText = processText(selection.text, blockType, isBlockComment);
 
 	editor.replaceRange(processedText, selection.from, selection.to);
 }
@@ -30,7 +22,7 @@ export function processComments(editor: Editor, isBlockComment: boolean): void {
  */
 export function trimEndAllDoc(editor: Editor): void {
 	const content = editor.getValue();
-	const trimmedContent = content.replace(/[ \t]+$/gm, "");
+	const trimmedContent = content.replace(/[ \t]+$/gm, '');
 	editor.setValue(trimmedContent);
 }
 
@@ -42,9 +34,9 @@ export function trimEndCodeBlocks(editor: Editor): void {
 	const processedContent = content.replace(
 		CODE_BLOCK_TRIM_PATTERN,
 		(_match, delimiter, language, blockContent, _closingDelimiter) => {
-			const trimmedBlockContent = blockContent.replace(/[ \t]+$/gm, "");
+			const trimmedBlockContent = blockContent.replace(/[ \t]+$/gm, '');
 			return `${delimiter}${language}\n${trimmedBlockContent}\n${delimiter}`;
-		},
+		}
 	);
 	editor.setValue(processedContent);
 }
@@ -54,7 +46,7 @@ export function trimEndCodeBlocks(editor: Editor): void {
  */
 function getSelection(
 	editor: Editor,
-	isBlockComment: boolean,
+	isBlockComment: boolean
 ): {
 	text: string;
 	start: number;
@@ -62,15 +54,15 @@ function getSelection(
 	from: EditorPosition;
 	to: EditorPosition;
 } {
-	let from = editor.getCursor("from");
-	let to = editor.getCursor("to");
+	let from = editor.getCursor('from');
+	let to = editor.getCursor('to');
 	let text = editor.getSelection();
 
 	// Adjustment for line comments
 	if (!isBlockComment) {
 		text = adjustSelection(editor, from, to, text);
-		from = editor.getCursor("from");
-		to = editor.getCursor("to");
+		from = editor.getCursor('from');
+		to = editor.getCursor('to');
 	}
 
 	const start = editor.posToOffset(from);
@@ -85,7 +77,7 @@ function getSelection(
 function processText(
 	text: string,
 	blockType: string | null,
-	isBlockComment: boolean,
+	isBlockComment: boolean
 ): string {
 	// Default Obsidian comments
 	if (!blockType) {
@@ -96,14 +88,12 @@ function processText(
 	if (!pattern) return text;
 
 	if (!isBlockComment) {
-		const lines = text.split("\n").filter((l) => l.trim() !== "");
+		const lines = text.split('\n').filter((l) => l.trim() !== '');
 		const allCommented = lines.every((l) => {
 			pattern.uncomment.lastIndex = 0;
 			return pattern.uncomment.test(l);
 		});
-		return allCommented
-			? uncommentText(text, pattern)
-			: commentText(text, pattern);
+		return allCommented ? uncommentText(text, pattern) : commentText(text, pattern);
 	}
 
 	pattern.uncomment.lastIndex = 0;
@@ -119,9 +109,9 @@ function processObsidianComment(text: string): string {
 	OBSIDIAN_COMMENT_PATTERN.lastIndex = 0;
 	if (OBSIDIAN_COMMENT_PATTERN.test(text)) {
 		OBSIDIAN_COMMENT_PATTERN.lastIndex = 0;
-		return text.replace(OBSIDIAN_COMMENT_PATTERN, "$1");
+		return text.replace(OBSIDIAN_COMMENT_PATTERN, '$1');
 	}
-	return text.replace(/^(.+)$/gms, "%% $1 %%");
+	return text.replace(/^(.+)$/gms, '%% $1 %%');
 }
 
 /**
