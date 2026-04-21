@@ -49,8 +49,6 @@ function getSelection(
 	isBlockComment: boolean
 ): {
 	text: string;
-	start: number;
-	end: number;
 	from: EditorPosition;
 	to: EditorPosition;
 } {
@@ -65,10 +63,7 @@ function getSelection(
 		to = editor.getCursor('to');
 	}
 
-	const start = editor.posToOffset(from);
-	const end = editor.posToOffset(to);
-
-	return { text, start, end, from, to };
+	return { text, from, to };
 }
 
 /**
