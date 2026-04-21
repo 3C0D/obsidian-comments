@@ -1,43 +1,54 @@
-import { Editor, type EditorPosition } from 'obsidian';
+import { Editor, type EditorPosition, type App } from 'obsidian';
 import { BLOCK_PATTERNS } from './constants.ts';
 
 /**
  * Detects the block type at the selection
  */
 export function detectBlockType(
-	content: string,
-	selectionStart: number,
-	selectionEnd: number
+	app: App,
+	editor: Editor,
+	from: EditorPosition,
+	to: EditorPosition
 ): string | null {
+	const content = editor.getValue();
+	const selectionStart = editor.posToOffset(from);
+	const selectionEnd = editor.posToOffset(to);
+
 	// Check for Templater blocks
 	if (detectTemplaterBlock(content, selectionStart, selectionEnd)) {
 		return 'templater';
 	}
 
 	// Check for code blocks
-	return detectCodeBlock(content, selectionStart, selectionEnd);
+	return detectCodeBlock(app, editor, from, to);
 }
 
 /**
- * Detects if the selection is inside a code block
+ * Detects if the selection is inside a code block using metadata cache
  */
 function detectCodeBlock(
-	content: string,
-	selectionStart: number,
-	selectionEnd: number
+	app: App,
+	editor: Editor,
+	from: EditorPosition,
+	to: EditorPosition
 ): string | null {
-	BLOCK_PATTERNS.codeBlock.lastIndex = 0;
+	const file = app.workspace.getActiveFile();
+	if (!file) return null;
 
-	let match;
-	while ((match = BLOCK_PATTERNS.codeBlock.exec(content))) {
-		const blockStart = match.index;
-		const blockEnd = match.index + match[0].length;
+	const metadata = app.metadataCache.getFileCache(file);
+	if (!metadata?.sections) return null;
 
-		if (blockStart <= selectionStart && blockEnd >= selectionEnd) {
-			return match[2] || 'empty';
-		}
-	}
-	return null;
+	const codeSection = metadata.sections.find(
+		(s) =>
+			s.type === 'code' &&
+			s.position.start.line <= from.line &&
+			s.position.end.line >= to.line
+	);
+	if (!codeSection) return null;
+
+	const fenceLine = editor.getLine(codeSection.position.start.line);
+	const langKey = fenceLine.slice(3).trim().split(' ')[0];
+	return langKey || 'empty';
 }
 
 /**

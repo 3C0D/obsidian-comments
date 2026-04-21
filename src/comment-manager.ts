@@ -1,4 +1,4 @@
-import { Editor, type EditorPosition } from 'obsidian';
+import { Editor, type EditorPosition, type App } from 'obsidian';
 import { getCommentPattern } from './patterns.ts';
 import type { CommentPatterns } from './types.ts';
 import { detectBlockType, adjustSelection } from './utils.ts';
@@ -7,11 +7,11 @@ import { CODE_BLOCK_TRIM_PATTERN, OBSIDIAN_COMMENT_PATTERN } from './constants.t
 /**
  * Processes comments (line or block)
  */
-export function processComments(editor: Editor, isBlockComment: boolean): void {
+export function processComments(app: App, editor: Editor, isBlockComment: boolean): void {
 	const selection = getSelection(editor, isBlockComment);
 	if (!selection.text && !isBlockComment) return;
 
-	const blockType = detectBlockType(editor.getValue(), selection.start, selection.end);
+	const blockType = detectBlockType(app, editor, selection.from, selection.to);
 	const processedText = processText(selection.text, blockType, isBlockComment);
 
 	editor.replaceRange(processedText, selection.from, selection.to);

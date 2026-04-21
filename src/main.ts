@@ -6,13 +6,13 @@ export default class AdvancedComments extends Plugin {
 		this.addCommand({
 			id: 'advanced-comments',
 			name: 'Line Comments',
-			editorCallback: (editor: Editor) => processComments(editor, false)
+			editorCallback: (editor: Editor) => processComments(this.app, editor, false)
 		});
 
 		this.addCommand({
 			id: 'advanced-blockComments',
 			name: 'Block Comments',
-			editorCallback: (editor: Editor) => processComments(editor, true)
+			editorCallback: (editor: Editor) => processComments(this.app, editor, true)
 		});
 
 		this.addCommand({
